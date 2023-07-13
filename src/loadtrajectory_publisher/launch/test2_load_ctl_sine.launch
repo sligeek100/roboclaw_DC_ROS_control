@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <arg name="dev" default="/dev/ttyACM0"/>
+    <!-- <arg name="dev" default="/dev/ttyUSB0"/> -->
+    <!-- <arg name="baud" default="115200"/> -->
+    <arg name="baud" default="460800"/>
+    <arg name="address" default="128"/>
+    <arg name="max_speed" default="1.5"/>
+    <arg name="ticks_per_meter" default="30921.818"/>
+    <arg name="newton_per_milliamp" default="0.01"/>
+    <arg name="max_position" default ="20300"/>
+
+    <arg name="cable_lmax" default ="0.7"/>
+    <arg name = "cable_lmin" default="0.2"/>
+    <arg name="omega" default="1"/>
+
+    <!-- load sine reference publisher -->
+    <node pkg="loadtrajectory_publisher" type="motor_sin_test.py" name="loadCtl" output="screen">
+        <!-- sine function reference used parameters  -->
+        <param name="~cable_lmax" value ="$(arg cable_lmax)"/>
+        <param name="~cable_lmin" value="$(arg cable_lmin)"/>
+        <param name="~omega" value ="$(arg omega)"/>
+
+        <param name="~dev" value="$(arg dev)"/>
+        <param name="~baud" value="$(arg baud)"/>
+        <param name="~address" value="$(arg address)"/>
+        <param name="~max_speed" value="$(arg max_speed)"/>
+        <param name="~newton_per_milliamp" value="$(arg newton_per_milliamp)"/>
+        <param name="~max_position" value="$(arg max_position)"/>
+        
+    </node>
+
+    <node pkg="diagnostic_aggregator" type="aggregator_node"
+          name="diagnostic_aggregator">
+        <rosparam command="load"
+                  file="$(find loadtrajectory_publisher)/config/roboclaw_diag.yaml"/>
+    </node>
+
+    <!-- record rosbag -->
+    <node pkg="rosbag" type="record" name="motor_state"
+        args="record -o $(find loadtrajectory_publisher)/bags/  /loadReference /load_motor_state"  >
+    </node>
+</launch>

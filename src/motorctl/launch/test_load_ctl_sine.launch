@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <arg name="dev" default="/dev/ttyACM0"/>
+    <!-- <arg name="dev" default="/dev/ttyUSB0"/> -->
+    <!-- <arg name="baud" default="115200"/> -->
+    <arg name="baud" default="460800"/>
+    <arg name="address" default="128"/>
+    <arg name="max_speed" default="1.2"/>
+    <arg name="ticks_per_meter" default="30921.818"/>
+    <arg name="newton_per_milliamp" default="0.01"/>
+    <arg name="max_position" default ="18553"/>
+
+    <arg name="cable_lmax" default ="0.6"/>
+    <arg name = "cable_lmin" default="0.15"/>
+   
+    <arg name="write_frequency" default = "10"/>
+
+   
+    <!-- load controller node  -->
+    <node pkg="motorctl" type="loadController.py" name="loadCtl" output="screen">
+        <param name="~dev" value="$(arg dev)"/>
+        <param name="~baud" value="$(arg baud)"/>
+        <param name="~address" value="$(arg address)"/>
+        <param name="~max_speed" value="$(arg max_speed)"/>
+        <param name="~newton_per_milliamp" value="$(arg newton_per_milliamp)"/>
+        <param name="~max_position" value="$(arg max_position)"/>
+        <param name="~cable_lmax" value ="$(arg cable_lmax)"/>
+        <param name="~cable_lmin" value="$(arg cable_lmin)"/>
+        <param name="~write_frequency" value="$(arg write_frequency)"/>
+    </node>
+
+    <!-- The aggregator_node loads "Analyzer" plugins to perform the diagnostics processing and categorization -->
+    <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator">
+          
+        <rosparam command="load" file="$(find motorctl)/config/roboclaw_diag.yaml"/>
+                  
+    </node>
+
+  
+</launch>

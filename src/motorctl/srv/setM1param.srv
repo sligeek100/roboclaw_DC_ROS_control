@@ -1,0 +1,4 @@
+int64 maxmotor_ticks
+---
+bool success
+string message 

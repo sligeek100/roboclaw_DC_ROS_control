@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+<!-- 
+    5-21-22, changed max position of motor to 0.6m.
+ -->
+
+<launch>
+
+    <arg name="dev" default="/dev/ttyACM0"/>
+    <!-- <arg name="dev" default="/dev/ttyUSB0"/> -->
+    <!-- <arg name="baud" default="115200"/> -->
+    <arg name="baud" default="460800"/>
+    <arg name="address" default="128"/>
+    <arg name="max_speed" default="1.5"/>
+    <arg name="ticks_per_meter" default="30921.818"/>
+    <arg name="newton_per_milliamp" default="0.01"/>
+    <arg name="max_position" default ="18553"/>
+
+    <arg name="cable_lmax" default ="0.63"/>
+    <arg name = "cable_lmin" default="0.2"/>
+    <arg name="omega" default="1"/>
+
+    <!-- load sine reference publisher and the controller, defined in motor_sin_test.py -->
+    <node pkg="loadtrajectory_publisher" type="loadTrajectory.py" name="loadSinref" output="screen">
+        <!-- sine function reference used parameters  -->
+        <param name="~cable_lmax" value ="$(arg cable_lmax)"/>
+        <param name="~cable_lmin" value="$(arg cable_lmin)"/>
+        <param name="~omega" value ="$(arg omega)"/>
+        
+    </node>
+
+    <!-- launch the roboclaw controller node  -->
+    <node pkg="motorctl" type="loadController.py" name="roboclaw_controller" output="screen">
+        <param name="~dev" value="$(arg dev)"/>
+        <param name="~baud" value="$(arg baud)"/>
+        <param name="~address" value="$(arg address)"/>
+        <param name="~max_speed" value="$(arg max_speed)"/>
+        <param name="~max_position" value="$(arg max_position)"/>
+        <param name="~cable_lmax" value ="$(arg cable_lmax)"/>
+        <param name="~cable_lmin" value="$(arg cable_lmin)"/>
+
+    </node>
+
+    <node pkg="diagnostic_aggregator" type="aggregator_node"
+          name="diagnostic_aggregator">
+        <rosparam command="load"
+                  file="$(find loadtrajectory_publisher)/config/roboclaw_diag.yaml"/>
+    </node>
+
+    <!-- record rosbag -->
+    <node pkg="rosbag" type="record" name="motor_state"
+        args="record -o $(find loadtrajectory_publisher)/bags/  roboclaw/loadReference roboclaw/load_motor_state"  >
+    </node>
+</launch>
